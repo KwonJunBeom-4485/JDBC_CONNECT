@@ -1,22 +1,23 @@
 package repository;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
+import dbutil.DButil;
 import domain.users.UserVO;
 
 public class UsersDAOImpl implements Users {
 
     // 멤버 변수 선언
-    private String url = "jdbc:mysql://localhost:3306/jdbc";
-    private String sql_user = "jdbcuser";
-    private String password = "jdbcuser";
+    // private String url = "jdbc:mysql://localhost:3306/jdbc";
+    // private String sql_user = "jdbcuser";
+    // private String password = "jdbcuser";
 
     @Override
     public int userAdd(UserVO user) {
@@ -24,11 +25,11 @@ public class UsersDAOImpl implements Users {
 
         int result = 0;
 
-        try (Connection conn = DriverManager.getConnection(url, sql_user, password)) {
+        try (Connection conn = DButil.getConnection()) {
             String sql = "insert into person(userId, userPw, userName, userEmail, " +
                     "phone1, phone2, age, address1, address2) values(?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-            PreparedStatement pstmt = conn.prepareStatement(sql);
+            PreparedStatement pstmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
 
             pstmt.setString(1, user.getPerson_userId());
             pstmt.setString(2, user.getPerson_userPw());
@@ -40,7 +41,17 @@ public class UsersDAOImpl implements Users {
             pstmt.setString(8, user.getPerson_address1());
             pstmt.setString(9, user.getPerson_address2());
 
-            result = pstmt.executeUpdate();
+            if(pstmt.executeUpdate() != 0) {
+
+                ResultSet rs = pstmt.getGeneratedKeys();
+                if(rs.next()) {
+                    long generatedId = rs.getLong(1);
+                    user.setPerson_id(generatedId);
+                }
+
+                result = 2; // 임시
+                System.out.println("삽입 성공");
+            }
 
         } catch (SQLException e) {
             System.out.println("DB 작업 실패");
@@ -55,7 +66,7 @@ public class UsersDAOImpl implements Users {
         // sql select 전체
         List<UserVO> list = new ArrayList<>();
 
-        try (Connection conn = DriverManager.getConnection(url, sql_user, password)) {
+        try (Connection conn = DButil.getConnection()) {
             // SQL
             String sql = "select * from person";
             PreparedStatement pstmt = conn.prepareStatement(sql);
@@ -93,7 +104,7 @@ public class UsersDAOImpl implements Users {
     public int userDel(UserVO user) {
         // sql delete
         int result = 0;
-        try (Connection conn = DriverManager.getConnection(url, sql_user, password)) {
+        try (Connection conn = DButil.getConnection()) {
             String sql = "delete from person where userId = ?";
 
             PreparedStatement pstmt = conn.prepareStatement(sql);
@@ -109,29 +120,29 @@ public class UsersDAOImpl implements Users {
     }
 
     @Override
-    public int userMod(UserVO before, UserVO after) {
+    public int userMod(UserVO user) {
 
         int result = 0;
 
         // sql update
-        try (Connection conn = DriverManager.getConnection(url, sql_user, password)) {
+        try (Connection conn = DButil.getConnection()) {
 
             String sql = "update person set userId=?, userPw=?, userName=?, userEmail=?"
-                    + ", phone1=?, phone2=?, age=?, address1=?, address2=?, modifyDate=? where userId=?";
+                    + ", phone1=?, phone2=?, age=?, address1=?, address2=?, modifyDate=? where id=?";
 
             PreparedStatement pstmt = conn.prepareStatement(sql);
 
-            pstmt.setString(1, after.getPerson_userId());
-            pstmt.setString(2, after.getPerson_userPw());
-            pstmt.setString(3, after.getPerson_userName());
-            pstmt.setString(4, after.getPerson_userEmail());
-            pstmt.setString(5, after.getPerson_phone1());
-            pstmt.setString(6, after.getPerson_phone2());
-            pstmt.setInt(7, after.getPerson_age());
-            pstmt.setString(8, after.getPerson_address1());
-            pstmt.setString(9, after.getPerson_address2());
+            pstmt.setString(1, user.getPerson_userId());
+            pstmt.setString(2, user.getPerson_userPw());
+            pstmt.setString(3, user.getPerson_userName());
+            pstmt.setString(4, user.getPerson_userEmail());
+            pstmt.setString(5, user.getPerson_phone1());
+            pstmt.setString(6, user.getPerson_phone2());
+            pstmt.setInt(7, user.getPerson_age());
+            pstmt.setString(8, user.getPerson_address1());
+            pstmt.setString(9, user.getPerson_address2());
             pstmt.setTimestamp(10, new Timestamp(System.currentTimeMillis())); // 수정 시간
-            pstmt.setString(11, before.getPerson_userId()); // where절 ? 값
+            pstmt.setLong(11, user.getPerson_id()); // where절 ? 값
 
             result = pstmt.executeUpdate();
 
@@ -146,7 +157,7 @@ public class UsersDAOImpl implements Users {
     public List<UserVO> userSearch(String userId, String userName) {
         // sql select 조건(where)
         List<UserVO> list = new ArrayList<>();
-        try (Connection conn = DriverManager.getConnection(url, sql_user, password)) {
+        try (Connection conn = DButil.getConnection()) {
             String sql = "select * from person where userId = ? and userName = ?";
 
             PreparedStatement pstmt = conn.prepareStatement(sql);
@@ -183,20 +194,21 @@ public class UsersDAOImpl implements Users {
         return list;
     }
 
-    @Override
-    public List<UserVO> userSearch(String userEmail) {
-        // sql select 조건(where)
-        List<UserVO> list = new ArrayList<>();
-        try (Connection conn = DriverManager.getConnection(url, sql_user, password)) {
-            String sql = "select * from person where userEmail = ?";
+        @Override
+    public Optional<UserVO> userSearch(String userEmail) {
+        // sql select, where email
+        Optional<UserVO> result = null;
 
+        try (Connection conn = DButil.getConnection()) {
+
+            // SQL
+            String sql = "select * from person where userEmail=?";
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, userEmail);
-
             ResultSet rs = pstmt.executeQuery();
 
-            while (rs.next()) {
-                list.add(UserVO.builder()
+            if (rs.next()) {
+                result = Optional.of(UserVO.builder()
                         .person_id(rs.getLong("id"))
                         .person_userId(rs.getString("userId"))
                         .person_userPw(rs.getString("userPw"))
@@ -204,7 +216,7 @@ public class UsersDAOImpl implements Users {
                         .person_userEmail(rs.getString("userEmail"))
                         .person_phone1(rs.getString("phone1"))
                         .person_phone2(rs.getString("phone2"))
-                        .person_age(rs.getInt("age"))
+                        .person_age(rs.getByte("age"))
                         .person_address1(rs.getString("address1"))
                         .person_address2(rs.getString("address2"))
                         .regDate(rs.getTimestamp("regDate"))
@@ -212,15 +224,12 @@ public class UsersDAOImpl implements Users {
                         .build());
             }
 
-            // for(UserVO vo : list)
-            // System.out.println(vo);
-
-        } catch (Exception e) {
-            System.out.println("DB 작업 실패");
+        } catch (SQLException e) {
+            System.out.println("DB 작업 실패!!");
             System.out.println(e.getMessage());
         }
 
-        return list;
+        return result;
     }
 
 }

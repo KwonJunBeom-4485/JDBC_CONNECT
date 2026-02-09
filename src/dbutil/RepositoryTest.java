@@ -36,13 +36,23 @@ public class RepositoryTest {
 
         
         // 수정
-        UserVO afterData = UserVO.builder()
-        .person_userId("test123").person_userPw("test123")
-        .person_userName("test123").person_userEmail("test123@test.com")
-        .person_address2("수정된 주소")
-        .build();
+        // UserVO afterData = UserVO.builder()
+        // .person_userId("test123").person_userPw("test123")
+        // .person_userName("test123").person_userEmail("test123@test.com")
+        // .person_address2("수정된 주소")
+        // .build();
 
-        if(repository.userMod(testData, afterData) != 0) {
+
+        testData.setPerson_userId("test123");
+        testData.setPerson_userPw("test123");
+        testData.setPerson_userName("test123");
+        testData.setPerson_userEmail("test123@test.com");
+        testData.setPerson_address2("수정된 주소");
+
+        // 수정하는 데이터에 따라 매번 객체를 builder 하지 않고, before에 testData를 저장하고
+        // setter로 값을 바꾼 testData를 넣어 userMod(before, testData) 이렇게 해도 좋다.
+
+        if(repository.userMod(testData) != 0) {
             System.out.println("수정 성공");
         } else {
             System.out.println("수정 실패");
@@ -62,7 +72,7 @@ public class RepositoryTest {
         .forEach(System.out::println);
 
         // 삭제
-        if(repository.userDel(afterData) != 0) {
+        if(repository.userDel(testData) != 0) {
             System.out.println("삭제 성공");
         } else {
             System.out.println("삭제 실패");
