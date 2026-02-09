@@ -5,7 +5,6 @@ import java.util.List;
 import dto.UserDTO;
 
 public interface UserManage {
-
     // 1. 사용자 등록
     boolean userRegister(UserDTO userDTO);
 
