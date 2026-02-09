@@ -19,6 +19,8 @@ public class RepositoryTest {
         UserVO testData = UserVO.builder()
         .person_userId("test111").person_userPw("test11")
         .person_userName("test111").person_userEmail("test111@test.com")
+        .person_age(32).person_phone1("02").person_phone2("8887777")
+        .person_address1("testuser의 주소1").person_address2("testuser의 주소2")
         .build();
 
         if(repository.userAdd(testData) != 0) {
@@ -37,6 +39,7 @@ public class RepositoryTest {
         UserVO afterData = UserVO.builder()
         .person_userId("test123").person_userPw("test123")
         .person_userName("test123").person_userEmail("test123@test.com")
+        .person_address2("수정된 주소")
         .build();
 
         if(repository.userMod(testData, afterData) != 0) {
@@ -50,10 +53,13 @@ public class RepositoryTest {
         for(UserVO vo : list)
             System.out.println(vo);
 
-        list = repository.userSearch("test123@test.com");
-        for(UserVO vo : list)
-            System.out.println(vo);
+        // list = repository.userSearch("test123@test.com");
+        // for(UserVO vo : list)
+        //     System.out.println(vo);
 
+        // 이렇게도 출력 가능
+        repository.userSearch("test123@test.com").stream()
+        .forEach(System.out::println);
 
         // 삭제
         if(repository.userDel(afterData) != 0) {
