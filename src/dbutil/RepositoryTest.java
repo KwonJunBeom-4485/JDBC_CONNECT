@@ -59,9 +59,6 @@ public class RepositoryTest {
         }
 
         // 조건 조회
-        list = repository.userSearch("test123", "test123");
-        for(UserVO vo : list)
-            System.out.println(vo);
 
         // list = repository.userSearch("test123@test.com");
         // for(UserVO vo : list)

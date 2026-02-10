@@ -41,10 +41,10 @@ public class UsersDAOImpl implements Users {
             pstmt.setString(8, user.getPerson_address1());
             pstmt.setString(9, user.getPerson_address2());
 
-            if(pstmt.executeUpdate() != 0) {
+            if (pstmt.executeUpdate() != 0) {
 
                 ResultSet rs = pstmt.getGeneratedKeys();
-                if(rs.next()) {
+                if (rs.next()) {
                     long generatedId = rs.getLong(1);
                     user.setPerson_id(generatedId);
                 }
@@ -127,22 +127,22 @@ public class UsersDAOImpl implements Users {
         // sql update
         try (Connection conn = DButil.getConnection()) {
 
-            String sql = "update person set userId=?, userPw=?, userName=?, userEmail=?"
+            String sql = "update person set userPw=?, userName=?, userEmail=?"
                     + ", phone1=?, phone2=?, age=?, address1=?, address2=?, modifyDate=? where id=?";
 
             PreparedStatement pstmt = conn.prepareStatement(sql);
 
-            pstmt.setString(1, user.getPerson_userId());
-            pstmt.setString(2, user.getPerson_userPw());
-            pstmt.setString(3, user.getPerson_userName());
-            pstmt.setString(4, user.getPerson_userEmail());
-            pstmt.setString(5, user.getPerson_phone1());
-            pstmt.setString(6, user.getPerson_phone2());
-            pstmt.setInt(7, user.getPerson_age());
-            pstmt.setString(8, user.getPerson_address1());
-            pstmt.setString(9, user.getPerson_address2());
-            pstmt.setTimestamp(10, new Timestamp(System.currentTimeMillis())); // 수정 시간
-            pstmt.setLong(11, user.getPerson_id()); // where절 ? 값
+            // pstmt.setString(1, user.getPerson_userId());
+            pstmt.setString(1, user.getPerson_userPw());
+            pstmt.setString(2, user.getPerson_userName());
+            pstmt.setString(3, user.getPerson_userEmail());
+            pstmt.setString(4, user.getPerson_phone1());
+            pstmt.setString(5, user.getPerson_phone2());
+            pstmt.setInt(6, user.getPerson_age());
+            pstmt.setString(7, user.getPerson_address1());
+            pstmt.setString(8, user.getPerson_address2());
+            pstmt.setTimestamp(9, new Timestamp(System.currentTimeMillis())); // 수정 시간
+            pstmt.setLong(10, user.getPerson_id()); // where절 ? 값
 
             result = pstmt.executeUpdate();
 
@@ -154,20 +154,21 @@ public class UsersDAOImpl implements Users {
     }
 
     @Override
-    public List<UserVO> userSearch(String userId, String userName) {
+    public Optional<UserVO> login(String userId, String userPw) {
         // sql select 조건(where)
-        List<UserVO> list = new ArrayList<>();
+        Optional<UserVO> user = null;
+
         try (Connection conn = DButil.getConnection()) {
-            String sql = "select * from person where userId = ? and userName = ?";
+            String sql = "select * from person where userId = ? and userPw = ?";
 
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setString(1, userId);
-            pstmt.setString(2, userName);
+            pstmt.setString(2, userPw);
 
             ResultSet rs = pstmt.executeQuery();
 
             while (rs.next()) {
-                list.add(UserVO.builder()
+                user = Optional.of(UserVO.builder()
                         .person_id(rs.getLong("id"))
                         .person_userId(rs.getString("userId"))
                         .person_userPw(rs.getString("userPw"))
@@ -191,10 +192,10 @@ public class UsersDAOImpl implements Users {
             System.out.println(e.getMessage());
         }
 
-        return list;
+        return user;
     }
 
-        @Override
+    @Override
     public Optional<UserVO> userSearch(String userEmail) {
         // sql select, where email
         Optional<UserVO> result = null;
