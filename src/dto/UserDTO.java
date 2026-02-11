@@ -41,7 +41,7 @@ public class UserDTO {
                 .person_id(userDTO.id)
                 .person_userId(userDTO.userId)
                 .person_userPw(userDTO.userPw)
-                .person_userPw(userDTO.userPw)
+                .person_userName(userDTO.userName)
                 .person_userEmail(userDTO.userEmail)
                 .person_phone1(userDTO.phone1)
                 .person_phone2(userDTO.phone2)

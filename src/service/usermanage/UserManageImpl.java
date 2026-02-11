@@ -6,8 +6,10 @@ import java.util.List;
 
 import domain.users.UserVO;
 import dto.UserDTO;
+import repository.UserDAOImplOracle;
 import repository.Users;
 import repository.UsersDAOImpl;
+import repository.UsersDAOImplMariadb;
 
 public class UserManageImpl implements UserManage {
 
@@ -24,7 +26,12 @@ public class UserManageImpl implements UserManage {
 
     // DB 작업을 할 수 있는 객체를 호출 작업 진행...
     // 인터페이스를 통한 객체 호출...
-    Users userRepository = new UsersDAOImpl();
+    // Users userRepository = new UsersDAOImpl();
+
+    // 오라클 버전
+    // Users userRepository = new UserDAOImplOracle();
+
+    Users userRepository = new UsersDAOImplMariadb();
 
     @Override
     public List<UserDTO> searchAll() {

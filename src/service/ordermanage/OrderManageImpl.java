@@ -12,12 +12,25 @@ import dto.UserDTO;
 import repository.Orders;
 import repository.Users;
 import repository.OrdersDAOImpl;
+import repository.OrdersDAOImplMariadb;
+import repository.OrdersDAOImplOracle;
+import repository.UserDAOImplOracle;
 import repository.UsersDAOImpl;
+import repository.UsersDAOImplMariadb;
 
 public class OrderManageImpl implements OrderManage {
 
-    Users userRepository = new UsersDAOImpl();
-    Orders orderRepository = new OrdersDAOImpl();
+    // Users userRepository = new UsersDAOImpl();
+    // Orders orderRepository = new OrdersDAOImpl();
+
+    // 오라클 버전
+    // Users userRepository = new UserDAOImplOracle();
+    // Orders orderRepository = new OrdersDAOImplOracle();
+
+    // MariaDB 버전
+    Users userRepository = new UsersDAOImplMariadb();
+    Orders orderRepository = new OrdersDAOImplMariadb();
+
     SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Override
